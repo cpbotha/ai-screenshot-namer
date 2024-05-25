@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "ai-screenshot-namer"
+version = "0.1.0"
+description = ""
+authors = ["Charl P. Botha <cpbotha@vxlabs.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ollama = "^0.2.0"
+openai = "^1.30.3"
+click = "^8.1.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

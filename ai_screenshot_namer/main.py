@@ -45,14 +45,19 @@ def _encode_image(image_path: Path):
 
 def _get_text_from_image(image_path: Path):
     # because check=True it will raise exception if called subprocess fails
-    ret = subprocess.run(
-        f"shortcuts run 'Extract text from image' --input-path '{str(image_path)}' --output-type public.plain-text --output-path -",
-        check=True,
-        shell=True,
-        capture_output=True,
-        text=True,
-    )
-    return ret.stdout
+    try:
+        ret = subprocess.run(
+            f"shortcuts run 'Extract text from image' --input-path '{str(image_path)}' --output-type public.plain-text --output-path -",
+            check=True,
+            shell=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error extracting text from image (expected if not macOS): {repr(e)}")
+        return None
+    else:
+        return ret.stdout
 
 
 # macos gives me e.g. Screenshot 2024-05-24 at 23.53.04.png
@@ -77,7 +82,11 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
     """Suggest a filename for the image at image_path using AI (VLM) and optionally OCR text from the image."""
     if ocr:
         ocr_text = _get_text_from_image(image_path)
-        prompt = f"{PROMPT}\n{PROMPT_OCR_EXT}\nText from image:\n{ocr_text}"
+        if ocr_text:
+            prompt = f"{PROMPT}\n{PROMPT_OCR_EXT}\nText from image:\n{ocr_text}"
+        else:
+            click.echo("No text extracted from image.")
+            prompt = PROMPT
     else:
         prompt = PROMPT
 
@@ -150,7 +159,7 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 )
 def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = False):
     """Rename SCREENSHOTS based on AI (VLM) image description and extracted text."""
-    click.echo(f"Using {'OpenAI' if use_openai else 'Ollama'}")
+    click.echo(f"Using {'OpenAI' if use_openai else 'Ollama: ' + MODEL}")
     for screenshot in screenshots:
         screenshot = Path(screenshot)
         date = _extract_date_from_filename(screenshot.stem)
@@ -160,7 +169,7 @@ def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = Fals
         if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
             new_name = f"{date_str}{suggestion.strip()}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
-            click.echo(f"{screenshot} -> {new_path}")
+            click.echo(f"{screenshot} → {new_path}")
             if do_rename:
                 screenshot.rename(new_path)
 

@@ -1,4 +1,3 @@
-# %%
 import base64
 from pathlib import Path
 import subprocess
@@ -12,7 +11,7 @@ import dateparser
 # ollama pull llava-phi3
 
 # vicuna language model, 13b q4_0 (8GB)
-MODEL = "llava:13b-v1.6"
+# MODEL = "llava:13b-v1.6"
 
 # llava+mistral punches above its weight
 # https://ollama.com/library/llava:7b-v1.6-mistral-q4_K_M
@@ -20,7 +19,7 @@ MODEL = "llava:13b-v1.6"
 # MODEL = "llava:7b-v1.6-mistral-q4_K_M"
 
 # not too bad for such a small model
-# MODEL = "llava-phi3"
+MODEL = "llava-phi3"
 
 PROMPT = """Suggest a lowercase filename of up to 64 characters (up to 10 words) for the included image (a screenshot) that is descriptive and useful for search.
 Return ONLY the suggested filename. It should be lowercase and contain only letters, numbers, and underscores, with no extension. 
@@ -93,7 +92,7 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
             ],
         )
 
-        return res["message"]["content"]
+        draft = res["message"]["content"]
 
     else:
         # this will use the key in env variable OPENAI_API_KEY
@@ -122,27 +121,49 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
             ],
         )
 
-        return res.choices[0].message.content
+        draft = res.choices[0].message.content
+
+    # filter out anything but alpha, numbers, underscores
+    # and replace whitespace with underscores
+    # llava-phi often adds " characters
+    if draft is not None:
+        draft = re.sub(r"[^\w\s]", "", draft).replace(" ", "_")
+
+    return draft
 
 
 @click.command()
 # so we can pass in multiple files, via shell path globbing e.g.
 # https://click.palletsprojects.com/en/8.1.x/arguments/#option-like-arguments
 @click.argument("screenshots", nargs=-1, type=click.Path(exists=True))
-def cli(screenshots: list[Path]):
+@click.option(
+    "--use-openai",
+    is_flag=True,
+    help="Use OpenAI instead of the default Ollama (local)",
+    default=False,
+)
+@click.option(
+    "--do-rename",
+    is_flag=True,
+    help="Actually rename the files (usually we just print the suggestions)",
+    default=False,
+)
+def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = False):
     """Rename SCREENSHOTS based on AI (VLM) image description and extracted text"""
 
+    click.echo(f"Using {'OpenAI' if use_openai else 'Ollama'}")
     for screenshot in screenshots:
         screenshot = Path(screenshot)
         date = _extract_date_from_filename(screenshot.stem)
         # output date as e.g. 20240525
-        date_str = "" if date is None else f"{date.strftime("%Y%m%d")}-"
+        date_str = "" if date is None else f"{date.strftime("%Y-%m-%d")}-"
         # construct new Path with stem = date_str + suggested name
-        if suggestion := suggest_image_name(screenshot):
+        if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
             new_name = f"{date_str}{suggestion.strip()}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
-            # screenshot.rename(new_path)
             click.echo(f"{screenshot} -> {new_path}")
+            if do_rename:
+                screenshot.rename(new_path)
 
 
 if __name__ == "__main__":

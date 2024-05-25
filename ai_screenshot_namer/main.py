@@ -1,8 +1,12 @@
+# %%
 import base64
 from pathlib import Path
 import subprocess
+import click
 import ollama
 from openai import OpenAI
+import re
+import dateparser
 
 # before you can use a model:
 # ollama pull llava-phi3
@@ -40,13 +44,33 @@ def _encode_image(image_path: Path):
 def _get_text_from_image(image_path: Path):
     # because check=True it will raise exception if called subprocess fails
     ret = subprocess.run(
-        f"shortcuts run 'Extract text from image' --input-path '{image_path}' --output-type public.plain-text --output-path -",
+        f"shortcuts run 'Extract text from image' --input-path '{str(image_path)}' --output-type public.plain-text --output-path -",
         check=True,
         shell=True,
         capture_output=True,
         text=True,
     )
     return ret.stdout
+
+
+# macos gives me e.g. Screenshot 2024-05-24 at 23.53.04.png
+# this will extract the date, which is all I need for my naming scheme in addition to the AI suggestion
+def _extract_date_from_filename(filename):
+    # Define a regex pattern to capture potential date segments
+    date_pattern = re.compile(
+        r"\d{4}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4}|\d{4}\d{2}\d{2}|\d{2}\d{2}\d{4}"
+    )
+
+    # Search for the date pattern in the filename
+    match = date_pattern.search(filename)
+
+    if match:
+        date_str = match.group()
+        # Parse the date string to a datetime object
+        date_obj = dateparser.parse(date_str)
+        return date_obj
+    else:
+        return None
 
 
 def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
@@ -99,3 +123,27 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
         )
 
         return res.choices[0].message.content
+
+
+@click.command()
+# so we can pass in multiple files, via shell path globbing e.g.
+# https://click.palletsprojects.com/en/8.1.x/arguments/#option-like-arguments
+@click.argument("screenshots", nargs=-1, type=click.Path(exists=True))
+def cli(screenshots: list[Path]):
+    """Rename SCREENSHOTS based on AI (VLM) image description and extracted text"""
+
+    for screenshot in screenshots:
+        screenshot = Path(screenshot)
+        date = _extract_date_from_filename(screenshot.stem)
+        # output date as e.g. 20240525
+        date_str = "" if date is None else f"{date.strftime("%Y%m%d")}-"
+        # construct new Path with stem = date_str + suggested name
+        if suggestion := suggest_image_name(screenshot):
+            new_name = f"{date_str}{suggestion.strip()}"
+            new_path = screenshot.with_name(new_name + screenshot.suffix)
+            # screenshot.rename(new_path)
+            click.echo(f"{screenshot} -> {new_path}")
+
+
+if __name__ == "__main__":
+    cli()

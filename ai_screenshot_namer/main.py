@@ -1,3 +1,5 @@
+"""Main module of ai-screenshot-renamer, copright 2024 Charl P. Botha <cpbotha@vxlabs.com>."""
+
 import base64
 import re
 import subprocess

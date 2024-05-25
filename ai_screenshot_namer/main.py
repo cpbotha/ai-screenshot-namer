@@ -1,11 +1,12 @@
 import base64
-from pathlib import Path
+import re
 import subprocess
+from pathlib import Path
+
 import click
+import dateparser
 import ollama
 from openai import OpenAI
-import re
-import dateparser
 
 # before you can use a model:
 # ollama pull llava-phi3
@@ -56,9 +57,7 @@ def _get_text_from_image(image_path: Path):
 # this will extract the date, which is all I need for my naming scheme in addition to the AI suggestion
 def _extract_date_from_filename(filename):
     # Define a regex pattern to capture potential date segments
-    date_pattern = re.compile(
-        r"\d{4}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4}|\d{4}\d{2}\d{2}|\d{2}\d{2}\d{4}"
-    )
+    date_pattern = re.compile(r"\d{4}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]\d{4}|\d{4}\d{2}\d{2}|\d{2}\d{2}\d{4}")
 
     # Search for the date pattern in the filename
     match = date_pattern.search(filename)
@@ -73,6 +72,7 @@ def _extract_date_from_filename(filename):
 
 
 def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
+    """Suggest a filename for the image at image_path using AI (VLM) and optionally OCR text from the image."""
     if ocr:
         ocr_text = _get_text_from_image(image_path)
         prompt = f"{PROMPT}\n{PROMPT_OCR_EXT}\nText from image:\n{ocr_text}"
@@ -112,9 +112,7 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
                         # {"type": "text", "text": "Message can also go here"},
                         {
                             "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_img}"
-                            },
+                            "image_url": {"url": f"data:image/jpeg;base64,{base64_img}"},
                         }
                     ],
                 },
@@ -149,8 +147,7 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
     default=False,
 )
 def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = False):
-    """Rename SCREENSHOTS based on AI (VLM) image description and extracted text"""
-
+    """Rename SCREENSHOTS based on AI (VLM) image description and extracted text."""
     click.echo(f"Using {'OpenAI' if use_openai else 'Ollama'}")
     for screenshot in screenshots:
         screenshot = Path(screenshot)

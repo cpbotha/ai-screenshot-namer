@@ -159,6 +159,9 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 )
 def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = False):
     """Rename SCREENSHOTS based on AI (VLM) image description and extracted text."""
+    if not screenshots:
+        click.echo("Please specify at least one screenshot filename.", err=True)
+        return
     click.echo(f"Using {'OpenAI' if use_openai else 'Ollama: ' + MODEL}")
     for screenshot in screenshots:
         screenshot = Path(screenshot)

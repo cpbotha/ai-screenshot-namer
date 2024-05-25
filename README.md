@@ -2,7 +2,7 @@
 
 Rename screenshots using VLMs and your macOS image text extraction.
 
-See [the vxlabs blog post](http://localhost:1313/2024/05/25/ai-screenshot-renamer-with-ollama-llava-gpt-4o-and-macos-ocr/) for more detail.
+See [the vxlabs blog post](https://vxlabs.com/2024/05/25/ai-screenshot-renamer-with-ollama-llava-gpt-4o-and-macos-ocr/) for more detail.
 
 ## Quickstart
 

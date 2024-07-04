@@ -142,6 +142,11 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 
     return draft
 
+def sanitize_filename(filename: str, max_length: int) -> str:
+    """Sanitize filename and truncate to max_length."""
+    filename = filename.strip()
+    filename = filename.replace('\n', '_').replace('\r', '_')
+    return filename[:max_length]
 
 @click.command()
 # so we can pass in multiple files, via shell path globbing e.g.
@@ -172,9 +177,7 @@ def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = Fals
         date_str = "" if date is None else f"{date.strftime("%Y-%m-%d")}-"
         # construct new Path with stem = date_str + suggested name
         if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
-            suggestion_max_length = FILENAME_MAX_CHARACTERS - len(date_str)
-            suggestion_truncated = suggestion.strip().replace('\n', '_').replace('\r', '_')[:suggestion_max_length]
-            new_name = f"{date_str}{suggestion_truncated}"
+            new_name = f"{date_str}{sanitize_filename(suggestion, FILENAME_MAX_CHARACTERS - len(date_str))}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
             click.echo(f"{screenshot} → {new_path}")
             if do_rename:

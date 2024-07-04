@@ -173,7 +173,7 @@ def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = Fals
         # construct new Path with stem = date_str + suggested name
         if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
             suggestion_max_length = FILENAME_MAX_CHARACTERS - len(date_str)
-            suggestion_truncated = suggestion.strip()[:suggestion_max_length]
+            suggestion_truncated = suggestion.strip().replace('\n', '_').replace('\r', '_')[:suggestion_max_length]
             new_name = f"{date_str}{suggestion_truncated}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
             click.echo(f"{screenshot} → {new_path}")

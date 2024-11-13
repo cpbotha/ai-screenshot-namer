@@ -44,7 +44,7 @@ export AISN_OPENAI_API_KEY=sk-proj-xxxx
 ```shell
 export AISN_OPENAI_API_KEY=sk-or-v1-bleh-bleh-bleh
 export AISN_OPENAI_BASE_URL=https://openrouter.ai/api/v1
-export AISN_OPENAI_MODEL=openai/gpt-4o-2024-08-06
+export AISN_OPENAI_MODEL=openai/gpt-4o-mini
 ```
 
 ### If you want to use macOS text extraction
@@ -78,6 +78,6 @@ ai-rename some-screenshot.png
 # ollama, do rename
 ai-rename --do-rename some-screenshot.png
 # openai, rename a whole bunch of screenshots
-# if ASN_OPENAI_MODEL is defined (e.g. "gpt-4o" for openai or "openai/gpt-4o-2024-08-06" for openrouter), --use-openai is assumed
+# if ASN_OPENAI_MODEL is defined (e.g. "gpt-4o-mini" for openai or "openai/gpt-4o-mini" for openrouter), --use-openai is assumed
 ai-rename --use-openai --do-rename *.png
 ```

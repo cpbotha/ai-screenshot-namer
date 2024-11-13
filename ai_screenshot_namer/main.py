@@ -135,10 +135,10 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 
     else:
         # if you don't set OPENAI_MODEL or OPENAI_API_URL it will default to the OpenAI defaults
-        model = os.getenv("OPENAI_MODEL", "gpt-4o")
-        api_base_url = os.getenv("OPENAI_BASE_URL", None)
+        model = os.getenv("AISN_OPENAI_MODEL", "gpt-4o")
+        api_base_url = os.getenv("AISN_OPENAI_BASE_URL", None)
         # this will use the key in env variable OPENAI_API_KEY
-        client = OpenAI(base_url=api_base_url)
+        client = OpenAI(api_key=os.getenv("AISN_OPENAI_KEY", None), base_url=api_base_url)
         base64_img = _encode_image(image_path)
         res = client.chat.completions.create(
             # https://platform.openai.com/docs/models/gpt-4o

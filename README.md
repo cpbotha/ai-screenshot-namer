@@ -22,6 +22,13 @@ Start the server:
 ollama start
 ```
 
+#### Configure a different local model
+
+```shell
+ollama pull llama-3.2-vision
+export AISN_MODEL=llama-3.2-vision
+```
+
 ### If you're going to use OpenAI
 
 Acquire an API key.
@@ -29,15 +36,15 @@ Acquire an API key.
 Set the environment variable:
 
 ```shell
-export OPENAI_API_KEY=sk-proj-xxxx
+export AISN_OPENAI_API_KEY=sk-proj-xxxx
 ```
 
 ### If you're going to use an alternative provider like OpenRouter
 
 ```shell
-export OPENAI_API_KEY=sk-or-v1-bleh-bleh-bleh
-export OPENAI_BASE_URL=https://openrouter.ai/api/v1
-export OPENAI_MODEL=openai/gpt-4o-2024-08-06
+export AISN_OPENAI_API_KEY=sk-or-v1-bleh-bleh-bleh
+export AISN_OPENAI_BASE_URL=https://openrouter.ai/api/v1
+export AISN_OPENAI_MODEL=openai/gpt-4o-2024-08-06
 ```
 
 ### If you want to use macOS text extraction

@@ -14,6 +14,7 @@ dependencies = [
     "openai~=1.54",
     "click>=8.1.7,<9.0.0",
     "dateparser>=1.2.0,<2.0.0",
+    "pillow>=11.0.0",
 ]
 
 [project.scripts]

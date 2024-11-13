@@ -1,6 +1,7 @@
 """Main module of ai-screenshot-renamer, copright 2024 Charl P. Botha <cpbotha@vxlabs.com>."""
 
 import base64
+import io
 import re
 import subprocess
 from pathlib import Path
@@ -9,6 +10,7 @@ import click
 import dateparser
 import ollama
 from openai import OpenAI
+from PIL import Image
 
 # before you can use a model:
 # ollama pull llava-phi3
@@ -22,15 +24,24 @@ from openai import OpenAI
 # MODEL = "llava:7b-v1.6-mistral-q4_K_M"
 
 # not too bad for such a small model
-MODEL = "llava-phi3"
+# MODEL = "llava-phi3"
+
+MODEL = "llama3.2-vision"
 
 FILENAME_MAX_CHARACTERS = 64
 
-PROMPT = """Suggest a lowercase filename of up to {} characters (up to 10 words) for the included image (a screenshot) that is descriptive and useful for search.
-Return ONLY the suggested filename. It should be lowercase and contain only letters, numbers, and underscores, with no extension. 
-It should follow the form main-thing_sub-thing_sub-thing etc. Some good examples of filenames are:
-"slide_sql_datagrid" OR "screenshot_python_datetime_conversion" OR "dashboard_sensor_graphs" OR "email_godaddy_domain_offer" OR "tweet_meme_ai_vs_ml"
-""".format(FILENAME_MAX_CHARACTERS)
+PROMPT = f"""
+Suggest a lowercase filename of up to {FILENAME_MAX_CHARACTERS} characters (up to 10 words) for the included image (a
+screenshot) that is descriptive and useful for search.
+
+Do not return any explanation, ONLY the suggested filename. 
+
+The filename should be lowercase and contain only letters, numbers, and underscores, with no extension. It should follow
+the form main-thing_sub-thing_sub-thing etc.
+
+Some good examples of filenames are: "slide_sql_datagrid" OR "screenshot_python_datetime_conversion" OR
+"dashboard_sensor_graphs" OR "email_godaddy_domain_offer" OR "tweet_meme_ai_vs_ml"
+"""
 
 PROMPT_OCR_EXT = "In addition to the image itself, I include at the end of this message any text that appears in the image to help you come up with a good name."
 
@@ -41,8 +52,12 @@ def _encode_image(image_path: Path):
     # check if the image exists
     if not image_path.exists():
         raise FileNotFoundError(f"Image file not found: {image_path}")
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
+
+    # read image_path, convert to webp via io, then encode as base64
+    pillow_image = Image.open(image_path)
+    bio = io.BytesIO()
+    pillow_image.save(bio, "WEBP")
+    return base64.b64encode(bio.getvalue()).decode("utf-8")
 
 
 def _get_text_from_image(image_path: Path):
@@ -142,11 +157,13 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 
     return draft
 
+
 def sanitize_filename(filename: str, max_length: int) -> str:
     """Sanitize filename and truncate to max_length."""
     filename = filename.strip()
-    filename = filename.replace('\n', '_').replace('\r', '_')
+    filename = filename.replace("\n", "_").replace("\r", "_")
     return filename[:max_length]
+
 
 @click.command()
 # so we can pass in multiple files, via shell path globbing e.g.

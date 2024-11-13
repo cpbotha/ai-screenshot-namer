@@ -1,25 +1,32 @@
-[tool.poetry]
+[project]
 name = "ai-screenshot-namer"
 version = "0.1.0"
 description = ""
-authors = ["Charl P. Botha <cpbotha@vxlabs.com>"]
-license = "MIT"
 readme = "README.md"
+requires-python = ">=3.11,<4.0"
+license = "MIT"
+authors = [
+    { name = "Charl P. Botha", email = "cpbotha@vxlabs.com" },
+]
+dependencies = [
+    "ollama~=0.3",
+    # this was >= 1.30.
+    "openai~=1.54",
+    "click>=8.1.7,<9.0.0",
+    "dateparser>=1.2.0,<2.0.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-ollama = "^0.2.0"
-openai = "^1.30.3"
-click = "^8.1.7"
-dateparser = "^1.2.0"
-
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.4"
+[project.scripts]
+ai-rename = "ai_screenshot_namer.main:cli"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
-ai-rename = "ai_screenshot_namer.main:cli"
+[tool.hatch.build.targets.wheel]
+packages = ["ai_screenshot_namer"]              
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.4,<7.0.0",
+]

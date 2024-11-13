@@ -46,7 +46,7 @@ This uses macOS to extract text from the target screenshot, and adds this to the
 
 To get this part working, [install my very simple shortcut](https://www.icloud.com/shortcuts/8ca57fbab726476f90c85f40fa7b40f2).
 
-The tool will still work without this, just not as well.
+The tool will still work without this, just not as well (especially the local models).
 
 See [the relevant section of my blog post](https://vxlabs.com/2024/05/25/ai-screenshot-renamer-with-ollama-llava-gpt-4o-and-macos-ocr/#macos-shortcut-for-command-line-extraction-of-text-from-images) for more detail.
 

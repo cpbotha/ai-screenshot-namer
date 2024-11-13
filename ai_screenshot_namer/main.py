@@ -200,14 +200,16 @@ def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = Fals
     if not screenshots:
         click.echo("Please specify at least one screenshot filename.", err=True)
         return
-    click.echo(f"Using {'OpenAI' if use_openai else 'Ollama: ' + MODEL}")
+
+    really_use_openai = use_openai or os.getenv("AISN_OPENAI_MODEL")
+    click.echo(f"Using {'OpenAI' if really_use_openai else 'Ollama: ' + MODEL}")
     for screenshot in screenshots:
         screenshot = Path(screenshot)
         date = _extract_date_from_filename(screenshot.stem)
         # output date as e.g. 20240525
         date_str = "" if date is None else f"{date.strftime("%Y-%m-%d")}-"
         # construct new Path with stem = date_str + suggested name
-        if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
+        if suggestion := suggest_image_name(screenshot, use_ollama=not really_use_openai):
             new_name = f"{date_str}{sanitize_filename(suggestion, FILENAME_MAX_CHARACTERS - len(date_str))}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
             click.echo(f"{screenshot} → {new_path}")

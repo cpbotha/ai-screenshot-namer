@@ -78,5 +78,6 @@ ai-rename some-screenshot.png
 # ollama, do rename
 ai-rename --do-rename some-screenshot.png
 # openai, rename a whole bunch of screenshots
+# if ASN_OPENAI_MODEL is defined (e.g. "gpt-4o" for openai or "openai/gpt-4o-2024-08-06" for openrouter), --use-openai is assumed
 ai-rename --use-openai --do-rename *.png
 ```

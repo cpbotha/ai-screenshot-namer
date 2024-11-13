@@ -24,11 +24,13 @@ from openai import OpenAI
 # not too bad for such a small model
 MODEL = "llava-phi3"
 
-PROMPT = """Suggest a lowercase filename of up to 64 characters (up to 10 words) for the included image (a screenshot) that is descriptive and useful for search.
+FILENAME_MAX_CHARACTERS = 64
+
+PROMPT = """Suggest a lowercase filename of up to {} characters (up to 10 words) for the included image (a screenshot) that is descriptive and useful for search.
 Return ONLY the suggested filename. It should be lowercase and contain only letters, numbers, and underscores, with no extension. 
 It should follow the form main-thing_sub-thing_sub-thing etc. Some good examples of filenames are:
 "slide_sql_datagrid" OR "screenshot_python_datetime_conversion" OR "dashboard_sensor_graphs" OR "email_godaddy_domain_offer" OR "tweet_meme_ai_vs_ml"
-"""
+""".format(FILENAME_MAX_CHARACTERS)
 
 PROMPT_OCR_EXT = "In addition to the image itself, I include at the end of this message any text that appears in the image to help you come up with a good name."
 
@@ -140,6 +142,11 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
 
     return draft
 
+def sanitize_filename(filename: str, max_length: int) -> str:
+    """Sanitize filename and truncate to max_length."""
+    filename = filename.strip()
+    filename = filename.replace('\n', '_').replace('\r', '_')
+    return filename[:max_length]
 
 @click.command()
 # so we can pass in multiple files, via shell path globbing e.g.
@@ -170,7 +177,7 @@ def cli(screenshots: list[Path], use_openai: bool = True, do_rename: bool = Fals
         date_str = "" if date is None else f"{date.strftime("%Y-%m-%d")}-"
         # construct new Path with stem = date_str + suggested name
         if suggestion := suggest_image_name(screenshot, use_ollama=not use_openai):
-            new_name = f"{date_str}{suggestion.strip()}"
+            new_name = f"{date_str}{sanitize_filename(suggestion, FILENAME_MAX_CHARACTERS - len(date_str))}"
             new_path = screenshot.with_name(new_name + screenshot.suffix)
             click.echo(f"{screenshot} → {new_path}")
             if do_rename:

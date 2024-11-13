@@ -32,6 +32,14 @@ Set the environment variable:
 export OPENAI_API_KEY=sk-proj-xxxx
 ```
 
+### If you're going to use an alternative provider like OpenRouter
+
+```shell
+export OPENAI_API_KEY=sk-or-v1-bleh-bleh-bleh
+export OPENAI_BASE_URL=https://openrouter.ai/api/v1
+export OPENAI_MODEL=openai/gpt-4o-2024-08-06
+```
+
 ### If you want to use macOS text extraction
 
 This uses macOS to extract text from the target screenshot, and adds this to the image prompt to increase the model's chances of coming up with a good name.
@@ -44,13 +52,15 @@ See [the relevant section of my blog post](https://vxlabs.com/2024/05/25/ai-scre
 
 ### Install ai-screenshot-renamer
 
-Install pipx: [How to install pipx](https://pipx.pypa.io/stable/installation/#installing-pipx)
+Use either uv (my preference, also for dev!):
 
-Install ai-screenshot-namer:
+- [How to install uv](https://docs.astral.sh/uv/getting-started/installation/)
+- `uv tool install git+https://github.com/cpbotha/ai-screenshot-namer.git`
 
-```shell
-pipx install git+https://github.com/cpbotha/ai-screenshot-namer.git
-```
+... or pipx:
+
+- [How to install pipx](https://pipx.pypa.io/stable/installation/#installing-pipx)
+- `pipx install git+https://github.com/cpbotha/ai-screenshot-namer.git`
 
 ### Rename some screenshots
 

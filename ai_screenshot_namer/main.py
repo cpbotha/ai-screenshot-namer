@@ -13,7 +13,11 @@ import ollama
 from openai import OpenAI
 from PIL import Image
 
-# before you can use a model:
+# default model is llava-phi3, small and fast, not too bad
+# you can configure the local model like this:
+# export AISN_MODEL=llama3.2-vision
+
+# before you can use a model (replace llava-phi3 with what you chose):
 # ollama pull llava-phi3
 
 # vicuna language model, 13b q4_0 (8GB)
@@ -24,11 +28,13 @@ from PIL import Image
 # 7b q4_k_m, 4.5GB
 # MODEL = "llava:7b-v1.6-mistral-q4_K_M"
 
-# not too bad for such a small model
-# MODEL = "llava-phi3"
-
 # on this Apple M1 Max, this 8GB model takes about 35s per image
-MODEL = "llama3.2-vision"
+# quality is high though!
+# MODEL = "llama3.2-vision"
+
+# llava-phi3 is not too bad for such a small model
+# 2 to 5 seconds per image on Apple M1 Max
+MODEL = os.getenv("AISN_MODEL", "llava-phi3")
 
 FILENAME_MAX_CHARACTERS = 64
 

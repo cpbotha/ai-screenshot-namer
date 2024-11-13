@@ -26,6 +26,7 @@ from PIL import Image
 # not too bad for such a small model
 # MODEL = "llava-phi3"
 
+# on this Apple M1 Max, this 8GB model takes about 35s per image
 MODEL = "llama3.2-vision"
 
 FILENAME_MAX_CHARACTERS = 64
@@ -57,6 +58,9 @@ def _encode_image(image_path: Path):
     pillow_image = Image.open(image_path)
     bio = io.BytesIO()
     pillow_image.save(bio, "WEBP")
+    size_kb_in = image_path.stat().st_size / 1024
+    size_kb_out = bio.tell() / 1024
+    click.echo(f"Image size: {size_kb_in:.1f} KB → {size_kb_out:.1f} KB")
     return base64.b64encode(bio.getvalue()).decode("utf-8")
 
 
@@ -140,7 +144,7 @@ def suggest_image_name(image_path: Path, ocr: bool = True, use_ollama=True):
                         # {"type": "text", "text": "Message can also go here"},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{base64_img}"},
+                            "image_url": {"url": f"data:image/webp;base64,{base64_img}"},
                         }
                     ],
                 },

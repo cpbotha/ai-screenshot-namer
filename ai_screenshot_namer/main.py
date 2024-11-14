@@ -61,10 +61,10 @@ def _calc_max_image_size(size: tuple[int, int]) -> tuple[int, int]:
     # https://platform.openai.com/docs/guides/vision#managing-images
     long_idx, short_idx = (0, 1) if size[0] > size[1] else (1, 0)
     new_size = list(size)
-    if size[long_idx] > 2000:
+    if new_size[long_idx] > 2000:
         new_size[short_idx] = int(2000 / size[long_idx] * size[short_idx])
         new_size[long_idx] = 2000
-    if size[short_idx] > 768:
+    if new_size[short_idx] > 768:
         new_size[long_idx] = int(768 / size[short_idx] * size[long_idx])
         new_size[short_idx] = 768
     return cast(tuple[int, int], tuple(new_size))

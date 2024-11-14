@@ -11,3 +11,6 @@ def test_calc_max_image_size():
 
     # also long side as height not width
     assert _calc_max_image_size((800, 1024)) == (768, 983)
+
+    # fixed bug
+    assert _calc_max_image_size((5854, 820)) == (2000, 280)

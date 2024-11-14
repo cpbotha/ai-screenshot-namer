@@ -82,13 +82,13 @@ def _encode_image(image_path: Path):
     new_size = _calc_max_image_size(pillow_image.size)
     if new_size != pillow_image.size:
         pillow_image.resize(new_size)
-        click.echo(f"Resized image from {pillow_image.size} to {new_size}")
+        click.echo(f"Resize image for API submission from {pillow_image.size} to {new_size}")
 
     bio = io.BytesIO()
     pillow_image.save(bio, "WEBP")
     size_kb_in = image_path.stat().st_size / 1024
     size_kb_out = bio.tell() / 1024
-    click.echo(f"Image size: {size_kb_in:.1f} KB → {size_kb_out:.1f} KB")
+    click.echo(f"API submission image size: {size_kb_in:.1f} KB → {size_kb_out:.1f} KB")
     return base64.b64encode(bio.getvalue()).decode("utf-8")
 
 

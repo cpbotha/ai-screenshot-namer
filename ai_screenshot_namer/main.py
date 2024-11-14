@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import click
 import dateparser
@@ -54,6 +55,21 @@ Some good examples of filenames are: "slide_sql_datagrid" OR "screenshot_python_
 PROMPT_OCR_EXT = "In addition to the image itself, I include at the end of this message any text that appears in the image to help you come up with a good name."
 
 
+def _calc_max_image_size(size: tuple[int, int]) -> tuple[int, int]:
+    """Calculate the maximum image size that can be sent to OpenAI."""
+    # long side should be less than 2000, short side should be less than 768
+    # https://platform.openai.com/docs/guides/vision#managing-images
+    long_idx, short_idx = (0, 1) if size[0] > size[1] else (1, 0)
+    new_size = list(size)
+    if size[long_idx] > 2000:
+        new_size[short_idx] = int(2000 / size[long_idx] * size[short_idx])
+        new_size[long_idx] = 2000
+    if size[short_idx] > 768:
+        new_size[long_idx] = int(768 / size[short_idx] * size[long_idx])
+        new_size[short_idx] = 768
+    return cast(tuple[int, int], tuple(new_size))
+
+
 # https://cookbook.openai.com/examples/multimodal/using_gpt4_vision_with_function_calling
 # Function to encode the image as base64
 def _encode_image(image_path: Path):
@@ -63,6 +79,11 @@ def _encode_image(image_path: Path):
 
     # read image_path, convert to webp via io, then encode as base64
     pillow_image = Image.open(image_path)
+    new_size = _calc_max_image_size(pillow_image.size)
+    if new_size != pillow_image.size:
+        pillow_image.resize(new_size)
+        click.echo(f"Resized image from {pillow_image.size} to {new_size}")
+
     bio = io.BytesIO()
     pillow_image.save(bio, "WEBP")
     size_kb_in = image_path.stat().st_size / 1024

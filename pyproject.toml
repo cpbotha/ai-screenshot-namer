@@ -30,4 +30,5 @@ packages = ["ai_screenshot_namer"]
 [dependency-groups]
 dev = [
     "ipykernel>=6.29.4,<7.0.0",
+    "pytest>=8.3.3",
 ]
